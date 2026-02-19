@@ -1,0 +1,9 @@
+# Sons of the Forest – Server Owners Whitelist
+#
+# Add the Steam ID of every server owner below, one per line.
+# Server owners have full in-game admin rights (kick, ban, promote players).
+#
+# To find your SteamID: open Steam → click your name (top-right) → Account Details.
+#
+# Example:
+# 76561198012345678

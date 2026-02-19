@@ -1,0 +1,40 @@
+services:
+  sotf-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sotf-server
+    restart: unless-stopped
+
+    ports:
+      - "8766:8766/udp"
+      - "27016:27016/udp"
+      - "9700:9700/udp"
+
+    volumes:
+      # All persistent data (server binaries, saves, config, Wine prefix) lives here.
+      - /data/sof:/data
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 8g
+          cpus: "4.0"
+
+    # Environment variables are passed straight through to the container.
+    # Edit as needed; the entrypoint seeds defaults/dedicatedserver.cfg on first boot.
+    environment:
+      - WINEDEBUG=-all
+      # If DISPLAY is needed for Wine in some environments, uncomment:
+      # - DISPLAY=:0
+
+    # Keep STDIN open so Wine can handle signals correctly.
+    stdin_open: false
+    tty: false
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
