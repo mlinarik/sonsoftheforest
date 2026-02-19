@@ -15,6 +15,11 @@ services:
       # All persistent data (server binaries, saves, config, Wine prefix) lives here.
       - /data/sof:/data
 
+    # /tmp must be a real tmpfs so wineserver can create its socket fd.
+    # On overlay-backed container roots the O_TMPFILE call Wine uses fails.
+    tmpfs:
+      - /tmp
+
     # Resource limits
     deploy:
       resources:
