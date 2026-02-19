@@ -1,20 +1,22 @@
 #!/bin/bash
 set -e
 
-INSTALL_DIR="/server"
-DATA_DIR="/data"
-USERDATA_DIR="${DATA_DIR}/userdata"
-WINEPREFIX_DIR="${DATA_DIR}/wineprefix"
+INSTALL_DIR="/data/sof"
+USERDATA_DIR="${INSTALL_DIR}/userdata"
+WINEPREFIX_DIR="${INSTALL_DIR}/wineprefix"
 
 export WINEPREFIX="${WINEPREFIX_DIR}"
 export WINEDEBUG="-all"
 export WINEDLLOVERRIDES="mscoree,mshtml="
 
-# /tmp is a symlink to /dev/shm (set in the Dockerfile) so Wine's hardcoded
-# P_tmpdir resolves to a real tmpfs.  XDG_RUNTIME_DIR also lives there.
+# Wine's wineserver uses O_TMPFILE for its socket, which fails on overlayfs.
+# /dev/shm is always a real tmpfs in every container runtime.
 export XDG_RUNTIME_DIR="/dev/shm/runtime-$(id -u)"
 mkdir -p "${XDG_RUNTIME_DIR}"
 chmod 0700 "${XDG_RUNTIME_DIR}"
+
+# ----- Ensure install dir exists -----
+mkdir -p "${INSTALL_DIR}"
 
 # ----- First-run Wine prefix initialisation -----
 if [ ! -d "${WINEPREFIX_DIR}/drive_c" ]; then
@@ -25,7 +27,7 @@ if [ ! -d "${WINEPREFIX_DIR}/drive_c" ]; then
 fi
 
 # ----- Install / update the server -----
-/scripts/update.sh
+/gamedata/update.sh
 
 # ----- Seed default config files from the image if not already present -----
 mkdir -p "${USERDATA_DIR}"

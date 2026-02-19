@@ -1,8 +1,9 @@
-FROM mlinarik/steam
+FROM docker.io/mlinarik/steam:latest
 
-# Install Wine and required dependencies as root
-USER root
+# steamcmd is installed to /gamedata by the base image
+ENV PATH="/gamedata:${PATH}"
 
+# Install Wine to run the Windows dedicated server binary
 RUN dpkg --add-architecture i386 \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -10,31 +11,22 @@ RUN dpkg --add-architecture i386 \
         wine32 \
         wine64 \
         winbind \
-        cabextract \
-        wget \
-        xvfb \
     && rm -rf /var/lib/apt/lists/*
 
-# Wine's wineserver hardcodes P_tmpdir (/tmp) for its socket tmpfile and uses
-# O_TMPFILE, which fails on overlayfs.  Replace /tmp with a symlink to /dev/shm
-# which is always a real tmpfs in every container runtime.
-RUN rm -rf /tmp && ln -s /dev/shm /tmp
+# Copy scripts
+COPY scripts/update.sh /gamedata/update.sh
+COPY scripts/entrypoint.sh /gamedata/entrypoint.sh
+RUN chmod +x /gamedata/update.sh /gamedata/entrypoint.sh
 
-# Server install dir and data dir
-RUN mkdir -p /server /data
-
-# Copy helper scripts and default config seeds
-COPY scripts/update.sh /scripts/update.sh
-COPY scripts/entrypoint.sh /scripts/entrypoint.sh
-RUN chmod +x /scripts/update.sh /scripts/entrypoint.sh
-
+# Seed default config files
 COPY defaults/ /defaults/
 
-# Exposed ports (all UDP per Endnight documentation)
+# Server files and saves are stored in the /data/sof volume at runtime
+VOLUME ["/data/sof"]
+
 EXPOSE 8766/udp
 EXPOSE 27016/udp
 EXPOSE 9700/udp
 
-VOLUME ["/data"]
-
-ENTRYPOINT ["/scripts/entrypoint.sh"]
+WORKDIR /gamedata
+ENTRYPOINT ["/gamedata/entrypoint.sh"]

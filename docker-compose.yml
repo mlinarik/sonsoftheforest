@@ -12,8 +12,8 @@ services:
       - "9700:9700/udp"
 
     volumes:
-      # All persistent data (server binaries, saves, config, Wine prefix) lives here.
-      - /data/sof:/data
+      # Server binaries, saves, config, and Wine prefix are all stored here.
+      - /data/sof:/data/sof
 
     # Resource limits
     deploy:
