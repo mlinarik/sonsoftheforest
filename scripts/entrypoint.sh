@@ -3,28 +3,9 @@ set -e
 
 INSTALL_DIR="/data/sof"
 USERDATA_DIR="${INSTALL_DIR}/userdata"
-WINEPREFIX_DIR="${INSTALL_DIR}/wineprefix"
-
-export WINEPREFIX="${WINEPREFIX_DIR}"
-export WINEDEBUG="-all"
-export WINEDLLOVERRIDES="mscoree,mshtml="
-
-# Wine's wineserver uses O_TMPFILE for its socket, which fails on overlayfs.
-# /dev/shm is always a real tmpfs in every container runtime.
-export XDG_RUNTIME_DIR="/dev/shm/runtime-$(id -u)"
-mkdir -p "${XDG_RUNTIME_DIR}"
-chmod 0700 "${XDG_RUNTIME_DIR}"
 
 # ----- Ensure install dir exists -----
 mkdir -p "${INSTALL_DIR}"
-
-# ----- First-run Wine prefix initialisation -----
-if [ ! -d "${WINEPREFIX_DIR}/drive_c" ]; then
-    echo "[entrypoint] Initialising Wine prefix at ${WINEPREFIX_DIR}..."
-    mkdir -p "${WINEPREFIX_DIR}"
-    wineboot --init
-    echo "[entrypoint] Wine prefix ready."
-fi
 
 # ----- Install / update the server -----
 /gamedata/update.sh
@@ -43,13 +24,9 @@ if [ ! -f "${USERDATA_DIR}/ownerswhitelist.txt" ]; then
 fi
 
 # ----- Start the server -----
-# -userdatapath accepts a Windows-style path; Z: maps to / inside Wine.
-USERDATA_WIN="Z:${USERDATA_DIR}"
-
 echo "[entrypoint] Starting Sons of the Forest Dedicated Server..."
 echo "[entrypoint]   Install dir : ${INSTALL_DIR}"
-echo "[entrypoint]   Userdata    : ${USERDATA_WIN}"
-echo "[entrypoint]   Wine prefix : ${WINEPREFIX_DIR}"
+echo "[entrypoint]   Userdata    : ${USERDATA_DIR}"
 
 cd "${INSTALL_DIR}"
-exec wine SonsOfTheForestDS.exe -userdatapath "${USERDATA_WIN}"
+exec ./SonsOfTheForestDS -userdatapath "${USERDATA_DIR}"
