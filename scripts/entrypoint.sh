@@ -10,6 +10,12 @@ export WINEPREFIX="${WINEPREFIX_DIR}"
 export WINEDEBUG="-all"
 export WINEDLLOVERRIDES="mscoree,mshtml="
 
+# Wine/wineserver requires XDG_RUNTIME_DIR to be a writable directory.
+# Without it, wineserver cannot create its tmpdir socket file.
+export XDG_RUNTIME_DIR="/tmp/runtime-$(id -u)"
+mkdir -p "${XDG_RUNTIME_DIR}"
+chmod 0700 "${XDG_RUNTIME_DIR}"
+
 # ----- First-run Wine prefix initialisation -----
 if [ ! -d "${WINEPREFIX_DIR}/drive_c" ]; then
     echo "[entrypoint] Initialising Wine prefix at ${WINEPREFIX_DIR}..."
