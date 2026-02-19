@@ -24,10 +24,7 @@ services:
 
     # Environment variables are passed straight through to the container.
     # Edit as needed; the entrypoint seeds defaults/dedicatedserver.cfg on first boot.
-    environment:
-      - WINEDEBUG=-all
-      # If DISPLAY is needed for Wine in some environments, uncomment:
-      # - DISPLAY=:0
+    environment: []
 
     # Keep STDIN open so Wine can handle signals correctly.
     stdin_open: false
