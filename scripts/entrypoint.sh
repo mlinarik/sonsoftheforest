@@ -10,10 +10,11 @@ export WINEPREFIX="${WINEPREFIX_DIR}"
 export WINEDEBUG="-all"
 export WINEDLLOVERRIDES="mscoree,mshtml="
 
-# Wine/wineserver requires XDG_RUNTIME_DIR and TMPDIR to point at a real
-# tmpfs.  On overlay-backed container roots, wineserver's O_TMPFILE call
-# fails; the compose file mounts /tmp as tmpfs to satisfy this requirement.
-export XDG_RUNTIME_DIR="/tmp/runtime-$(id -u)"
+# Wine/wineserver uses O_TMPFILE to create its socket, which fails on
+# overlay-backed /tmp.  /dev/shm is always a real tmpfs in every container
+# runtime (Docker, Podman, etc.) without any extra compose configuration,
+# so we point both XDG_RUNTIME_DIR and TMPDIR there.
+export XDG_RUNTIME_DIR="/dev/shm/runtime-$(id -u)"
 mkdir -p "${XDG_RUNTIME_DIR}"
 chmod 0700 "${XDG_RUNTIME_DIR}"
 export TMPDIR="${XDG_RUNTIME_DIR}"
