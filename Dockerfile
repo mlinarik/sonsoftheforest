@@ -1,5 +1,9 @@
 FROM docker.io/mlinarik/steam:latest
 
+# Run as root so the container can write to the /data/sof volume regardless
+# of the host directory ownership (important for rootless Podman).
+USER root
+
 # steamcmd is installed to /gamedata by the base image
 ENV PATH="/gamedata:${PATH}"
 
