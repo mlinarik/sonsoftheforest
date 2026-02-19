@@ -15,6 +15,11 @@ RUN dpkg --add-architecture i386 \
         xvfb \
     && rm -rf /var/lib/apt/lists/*
 
+# Wine's wineserver hardcodes P_tmpdir (/tmp) for its socket tmpfile and uses
+# O_TMPFILE, which fails on overlayfs.  Replace /tmp with a symlink to /dev/shm
+# which is always a real tmpfs in every container runtime.
+RUN rm -rf /tmp && ln -s /dev/shm /tmp
+
 # Server install dir and data dir
 RUN mkdir -p /server /data
 
